@@ -10,23 +10,64 @@
 // (There are also optimizations that will allow you to skip a lot of the dead search space)
 // take a look at solversSpec.js to see what the tests are expecting
 
+window.deepCopy = function(array) {
+  return _.map(array, function(x) {
+    return x.slice();
+  });
+};
 
 // return a matrix (an array of arrays) representing a single nxn chessboard, with n rooks placed such that none of them can attack each other
 
 window.findNRooksSolution = function(n) {
-  var solution = undefined; //fixme
+  var board = new Board({n: n});
+  var solution = null;
 
-  console.log('Single solution for ' + n + ' rooks:', JSON.stringify(solution));
-  return solution;
+  var findSolution = function(rowIndex) {
+    if (solution) return;
+
+    for (var i = 0; i < n; ++i) {
+      board.togglePiece(rowIndex, i);
+
+      if (!board.hasAnyRooksConflicts() ) {
+        if (rowIndex < (n - 1) ) {
+          findSolution(rowIndex + 1);
+        } else {
+          solution = deepCopy(board.rows() );
+        }
+      }
+
+      board.togglePiece(rowIndex, i);
+    }
+  };
+
+  findSolution(0);
+  return solution || new Board({n:n}).rows();
 };
 
 
 
 // return the number of nxn chessboards that exist, with n rooks placed such that none of them can attack each other
 window.countNRooksSolutions = function(n) {
-  var solutionCount = undefined; //fixme
+  var board = new Board({n: n});
+  var solutionCount = 0;
 
-  console.log('Number of solutions for ' + n + ' rooks:', solutionCount);
+  var findSolution = function(rowIndex) {
+    for (var i = 0; i < n; ++i) {
+      board.togglePiece(rowIndex, i);
+
+      if (!board.hasAnyRooksConflicts() ) {
+        if (rowIndex < (n - 1) ) {
+          findSolution(rowIndex + 1);
+        } else {
+          ++solutionCount;
+        }
+      }
+
+      board.togglePiece(rowIndex, i);
+    }
+  };
+
+  findSolution(0);
   return solutionCount;
 };
 
@@ -34,17 +75,64 @@ window.countNRooksSolutions = function(n) {
 
 // return a matrix (an array of arrays) representing a single nxn chessboard, with n queens placed such that none of them can attack each other
 window.findNQueensSolution = function(n) {
-  var solution = undefined; //fixme
+  if (n === 2 || n === 3) {
+    return new Board({n:n}).rows();
+  }
 
-  console.log('Single solution for ' + n + ' queens:', JSON.stringify(solution));
-  return solution;
+  var board = new Board({n: n});
+  var solution = null;
+
+  var findSolution = function(rowIndex) {
+    if (solution) return;
+    
+    for (var i = 0; i < n; ++i) {
+      board.togglePiece(rowIndex, i);
+
+      if (!board.hasAnyQueensConflicts() ) {
+        if (rowIndex < (n - 1) ) {
+          findSolution(rowIndex + 1);
+        } else {
+          solution = deepCopy(board.rows() );
+        }
+      }
+
+      board.togglePiece(rowIndex, i);
+    }
+  };
+
+  findSolution(0);
+  return solution || new Board({n:n}).rows();
 };
 
 
 // return the number of nxn chessboards that exist, with n queens placed such that none of them can attack each other
 window.countNQueensSolutions = function(n) {
-  var solutionCount = undefined; //fixme
+  if (n === 2 || n === 3) {
+    return 0;
+  }
 
-  console.log('Number of solutions for ' + n + ' queens:', solutionCount);
+  var board = new Board({n: n});
+  var solutionCount = 0;
+
+  var findSolution = function(rowIndex) {
+    for (var i = 0; i < n; ++i) {
+      board.togglePiece(rowIndex, i);
+
+      if (!board.hasAnyQueensConflicts() ) {
+        if (rowIndex < (n - 1) ) {
+          findSolution(rowIndex + 1);
+        } else {
+          if (n === 4) {
+            console.log(board.rows() );
+          }
+          ++solutionCount;
+        }
+      }
+
+      board.togglePiece(rowIndex, i);
+    }
+  };
+
+  findSolution(0);
   return solutionCount;
 };

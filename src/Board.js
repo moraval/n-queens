@@ -29,14 +29,6 @@
       this.trigger('change');
     },
 
-    _getFirstRowColumnIndexForMajorDiagonalOn: function(rowIndex, colIndex) {
-      return colIndex - rowIndex;
-    },
-
-    _getFirstRowColumnIndexForMinorDiagonalOn: function(rowIndex, colIndex) {
-      return colIndex + rowIndex;
-    },
-
     hasAnyRooksConflicts: function() {
       return this.hasAnyRowConflicts() || this.hasAnyColConflicts();
     },
@@ -45,8 +37,8 @@
       return (
         this.hasRowConflictAt(rowIndex) ||
         this.hasColConflictAt(colIndex) ||
-        this.hasMajorDiagonalConflictAt(this._getFirstRowColumnIndexForMajorDiagonalOn(rowIndex, colIndex)) ||
-        this.hasMinorDiagonalConflictAt(this._getFirstRowColumnIndexForMinorDiagonalOn(rowIndex, colIndex))
+        this.hasMajorDiagonalConflictAt(rowIndex, colIndex) ||
+        this.hasMinorDiagonalConflictAt(rowIndex, colIndex)
       );
     },
 
