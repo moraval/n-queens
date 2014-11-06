@@ -197,12 +197,13 @@
       while (this._isInBounds(rowIdx, colIdx) ) {
         if (rows[rowIdx][colIdx] === 1) ++counter;
         if (counter > 1) break;
-
         ++rowIdx;
         --colIdx;
       }
 
-      return counter > 1;
+      if (counter > 1) {
+        return true;
+      }
 
       rowIdx = rowIndex;
       colIdx = colIndex;
@@ -216,7 +217,9 @@
         ++colIdx;
       }
 
-      return counter > 1;
+      if (counter > 1) {
+        return true;
+      }
     },
 
     // test if any minor diagonals on this board contain conflicts
@@ -224,7 +227,7 @@
       var n = this.get('n');
 
       for (var i = 0; i < n; ++i) {
-        if (this.hasMinorDiagonalConflictAt(i, 0) ) {
+        if (this.hasMinorDiagonalConflictAt(i, n - 1) ) {
           return true;
         }
       }

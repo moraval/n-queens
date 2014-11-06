@@ -84,7 +84,7 @@ window.findNQueensSolution = function(n) {
 
   var findSolution = function(rowIndex) {
     if (solution) return;
-    
+
     for (var i = 0; i < n; ++i) {
       board.togglePiece(rowIndex, i);
 
@@ -115,17 +115,16 @@ window.countNQueensSolutions = function(n) {
   var solutionCount = 0;
 
   var findSolution = function(rowIndex) {
-    for (var i = 0; i < n; ++i) {
+    for (var i = 0; i < n; i += 1) {
       board.togglePiece(rowIndex, i);
 
       if (!board.hasAnyQueensConflicts() ) {
         if (rowIndex < (n - 1) ) {
           findSolution(rowIndex + 1);
         } else {
-          if (n === 4) {
-            console.log(board.rows() );
-          }
-          ++solutionCount;
+          console.log('Solution');
+          console.log(JSON.stringify(deepCopy(board.rows())));
+          solutionCount += 1;
         }
       }
 
