@@ -1,0 +1,26 @@
+{
+  "name": "N-queens",
+  "version": "1.0.0",
+  "description": "N-queens through webworkers",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/thejsj/2014-10-n-queens.git"
+  },
+  "author": "thejsj",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/thejsj/2014-10-n-queens/issues"
+  },
+  "homepage": "https://github.com/thejsj/2014-10-n-queens",
+  "devDependencies": {
+    "grunt": "^0.4.5",
+    "grunt-contrib-watch": "^0.6.1"
+  },
+  "dependencies": {
+    "grunt-watchify": "^0.1.0"
+  }
+}
