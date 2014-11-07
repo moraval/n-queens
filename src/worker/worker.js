@@ -9,7 +9,7 @@ __self.countNQueensSolutions = require('./countNQueensDistributed');
 try {
     if (self !== undefined) {
         self.addEventListener('message', function (e) {
-            self.postMessage(__self.countNQueensSolutions(e.data));
+            self.postMessage(__self.countNQueensSolutions(e.data.n));
         }, false);
     }
 } catch (err) {}

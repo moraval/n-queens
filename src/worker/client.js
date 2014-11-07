@@ -9,6 +9,8 @@ $(document).ready(function () {
         $('.messages').append(str);
         worker.postMessage(e.data.n + 1);
     }, false);
-    worker.postMessage(4); // Send data to our worker.
+    worker.postMessage({
+        n: 4
+    }); // Send data to our worker.
 
 });
