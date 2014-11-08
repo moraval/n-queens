@@ -1,6 +1,13 @@
-var NQueensJobQueueHandler = function (jobs, solutionCount) {
-  this.jobs = jobs;
-  this.solutionCount = solutionCount;
+var Board = require('./Board');
+var NQueensJob = require('./NQueensJob');
+
+var NQueensJobQueueHandler = function (jobsArrays) {
+  this.jobs = [];
+  var that = this;
+  jobsArrays.forEach(function (job) {
+    that.jobs.push(new NQueensJob(new Board(job.rows), job.rowIndex, job.n));
+  });
+  this.solutionCount = 0;
 };
 
 NQueensJobQueueHandler.prototype.getJobCount = function () {
@@ -14,8 +21,11 @@ NQueensJobQueueHandler.prototype.execute = function () {
     // Remove this job once it's done
     this.jobs.splice(0, 1);
   }
+  var jobsArrays = this.jobs.map(function (job) {
+    return job.getArgsArray();
+  });
   return {
-    jobs: this.jobs,
+    jobs: jobsArrays,
     solutionCount: this.solutionCount
   };
 };

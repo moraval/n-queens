@@ -1,4 +1,5 @@
 var Board = require('./Board');
+
 // NQueensJob (Board, N)
 // return solutionCount, jobs
 var NQueensJob = function (board, rowIndex, n) {
@@ -12,6 +13,10 @@ var NQueensJob = function (board, rowIndex, n) {
 
 NQueensJob.prototype.getID = function () {
   return this.board.getID();
+};
+
+NQueensJob.prototype.getArgsArray = function () {
+  return [this.board.rows(), this.rowIndex, this.n];
 };
 
 NQueensJob.prototype.execute = function () {
