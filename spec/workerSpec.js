@@ -1,10 +1,11 @@
 var _ = require('underscore');
 var expect = require('chai').expect;
 
-var Board = require('../src/worker/worker').Board;
-var countNQueensSolutions = require('../src/worker/worker').countNQueensSolutions;
-var NQueensJobQueueHandler = require('../src/worker/NQueensJobQueueHandler');
-var NQueensJob = require('../src/worker/NQueensJob');
+var Board = require('../src/worker/classes/Board');
+// var countNQueensSolutions = require('../src/worker/countNQueens');
+var countNQueensSolutions = require('../src/worker/countNQueensDistributed');
+var nQueensJobQueueHandler = require('../src/worker/classes/nQueensJobQueueHandler');
+var nQueensJobProcessor = require('../src/worker/classes/nQueensJobProcessor');
 
 describe("Board", function () {
 
@@ -76,46 +77,46 @@ describe("Board", function () {
 describe('countNQueensSolutions()', function () {
   it('finds the number of valid solutions for n = 0', function () {
     var response = countNQueensSolutions(0);
-    expect(response.solution).to.be.equal(1);
+    expect(response.solutionCount).to.be.equal(1);
   });
 
   it('finds the number of valid solutions for n = 1', function () {
     var response = countNQueensSolutions(1);
-    expect(response.solution).to.be.equal(1);
+    expect(response.solutionCount).to.be.equal(1);
   });
 
   it('finds the number of valid solutions for n = 2', function () {
     var response = countNQueensSolutions(2);
-    expect(response.solution).to.be.equal(0);
+    expect(response.solutionCount).to.be.equal(0);
   });
 
   it('finds the number of valid solutions for n = 3', function () {
     var response = countNQueensSolutions(3);
-    expect(response.solution).to.be.equal(0);
+    expect(response.solutionCount).to.be.equal(0);
   });
 
   it('finds the number of valid solutions for n = 4', function () {
     var response = countNQueensSolutions(4);
-    expect(response.solution).to.be.equal(2);
+    expect(response.solutionCount).to.be.equal(2);
   });
 
   it('finds the number of valid solutions for n = 5', function () {
     var response = countNQueensSolutions(5);
-    expect(response.solution).to.be.equal(10);
+    expect(response.solutionCount).to.be.equal(10);
   });
 
   it('finds the number of valid solutions for n = 6', function () {
     var response = countNQueensSolutions(6);
-    expect(response.solution).to.be.equal(4);
+    expect(response.solutionCount).to.be.equal(4);
   });
 
   it('finds the number of valid solutions for n = 40', function () {
     var response = countNQueensSolutions(7);
-    expect(response.solution).to.be.equal(40);
+    expect(response.solutionCount).to.be.equal(40);
   });
 
   it('finds the number of valid solutions for n = 40', function () {
     var response = countNQueensSolutions(8);
-    expect(response.solution).to.be.equal(92);
+    expect(response.solutionCount).to.be.equal(92);
   });
 });

@@ -216,117 +216,152 @@ var makeEmptyArray = function (n) {
 module.exports = Board;
 },{}],2:[function(require,module,exports){
 var Board = require('./Board');
+/**
+ * @param <jobObject>
+ *   board: Matrix
+ *   rowIndex: Number
+ *   n: Number
+ * @return <object>
+ *   foundSolution: Boolean
+ *   rowIndex: Number
+ *   n: Number
+ *   jobs: Array[jobObject]
+ */
+var nQueensJobProcessor = function (jobObject) {
+  var boardRows = jobObject.boardRows;
+  var rowIndex = jobObject.rowIndex;
+  var n = jobObject.n;
 
-// NQueensJob (Board, N)
-// return solutionCount, jobs
-var nQueensJobProcessor = function (board, rowIndex, n) {
+  var board = new Board(boardRows);
   var foundSolution = false;
   var jobs = [];
 
-  this.board = board;
-  this.rowIndex = rowIndex;
-  this.jobs = [];
-  this.executed = false;
-  this.n = n;
-  this.foundSolution = false;
-};
-
-NQueensJob.prototype.getID = function () {
-  return this.board.getID();
-};
-
-NQueensJob.prototype.getArgsArray = function () {
-  return [this.board.rows(), this.rowIndex, this.n, this.foundSolution];
-};
-
-NQueensJob.prototype.execute = function () {
-  if (this.rowIndex === this.n) {
-    this.solutionCount += 1;
-    return;
-  }
-  for (var i = 0; i < this.n; i += 1) {
-    this.board.togglePiece(this.rowIndex, i);
-    if (!this.board.hasAnyQueensConflicts()) {
-      this.jobs.push(
-        new NQueensJob(
-          new Board(this.board.rows()),
-          this.rowIndex + 1,
-          this.n
-        )
-      );
+  if (rowIndex === n) {
+    foundSolution = true;
+  } else {
+    for (var i = 0; i < n; i += 1) {
+      board.togglePiece(rowIndex, i);
+      if (!board.hasAnyQueensConflicts()) {
+        jobs.push({
+          boardRows: board.rows(),
+          rowIndex: rowIndex + 1,
+          n: n,
+          id: Math.floor(Math.random() * 10000)
+        });
+      }
+      board.togglePiece(rowIndex, i);
     }
-    this.board.togglePiece(this.rowIndex, i);
   }
-  this.exeucted = true;
   return {
-    solutionCount: this.solutionCount,
-    jobs: this.jobs
+    foundSolution: foundSolution,
+    rowIndex: rowIndex,
+    n: n,
+    jobs: jobs
   };
 };
 
-module.exports = NQueensJob;
+module.exports = nQueensJobProcessor;
 },{"./Board":1}],3:[function(require,module,exports){
 var Board = require('./Board');
-var NQueensJob = require('./NQueensJob');
+var nQueensJobProcessor = require('./nQueensJobProcessor');
 
-var NQueensJobQueueHandler = function (jobsArrays) {
-  this.jobs = [];
-  var that = this;
-  jobsArrays.forEach(function (job) {
-    that.jobs.push(new NQueensJob(new Board(job.rows), job.rowIndex, job.n));
-  });
-  this.solutionCount = 0;
-};
-
-NQueensJobQueueHandler.prototype.getJobCount = function () {
-  return this.jobs.length;
-};
-
-NQueensJobQueueHandler.prototype.execute = function () {
-  while (this.jobs.length > 0 || this.jobCount < 100) {
+/**
+ * @param Array[jobObject, ...]
+ * @return <object>
+ *   jobs: Array[jobObject, ...]
+ *   solutionCount: Number
+ */
+var nQueensJobQueueHandler = function (enqueuedJobs) {
+  var solutionCount = {};
+  var executedJobCount = 0;
+  // Execute 100 jobs MAX
+  while (enqueuedJobs.length > 0 && executedJobCount < 100) {
+    executedJobCount += 1;
     // Execute the first job in the queue
-    this.executeSingleJob(this.jobs[0]);
-    // Remove this job once it's done
-    this.jobs.splice(0, 1);
+    var result = nQueensJobProcessor(enqueuedJobs.pop());
+    // Concatenate new jobs
+    enqueuedJobs = enqueuedJobs.concat(result.jobs);
+    // Add the solution to our solution
+    if (result.foundSolution === true) {
+      if (solutionCount[result.n] === undefined) {
+        solutionCount[result.n] = 1;
+      } else {
+        solutionCount[result.n] += 1;
+      }
+    }
   }
-  var jobsArrays = this.jobs.map(function (job) {
-    return job.getArgsArray();
-  });
   return {
-    jobs: jobsArrays,
-    solutionCount: this.solutionCount
+    jobCollection: enqueuedJobs,
+    solutionCount: solutionCount
   };
 };
 
-NQueensJobQueueHandler.prototype.executeSingleJob = function (job) {
-  var jobResult = job.execute();
-  this.jobs = this.jobs.concat(jobResult.jobs);
-  this.solutionCount += jobResult.solutionCount;
+module.exports = nQueensJobQueueHandler;
+},{"./Board":1,"./nQueensJobProcessor":2}],4:[function(require,module,exports){
+var Board = require('./classes/Board');
+var nQueensJobQueueHandler = require('./classes/nQueensJobQueueHandler');
+var nQueensJobProcessor = require('./classes/nQueensJobProcessor');
+
+var countNQueensSolutions = function (n) {
+  if (n === 0 || n === 1) return {
+    n: n,
+    solutionCount: 1
+  };
+  if (n === 2 || n === 3) return {
+    n: n,
+    solutionCount: 0
+  };
+  var board = new Board({
+    n: n
+  });
+  var solutionCount = 0;
+  var jobs = [{
+    'boardRows': board.rows(),
+    'rowIndex': 0,
+    'n': n
+  }];
+  while (jobs.length > 0) {
+    var result;
+    if (jobs.length > 1) {
+      var randomKey = Math.floor(Math.random() * jobs.length);
+      var randomJob = jobs.splice(randomKey, 1)[0];
+      result = nQueensJobQueueHandler(jobs);
+      jobs = result.jobs;
+      jobs.push(randomJob);
+    } else {
+      result = nQueensJobQueueHandler(jobs);
+      jobs = result.jobs;
+    }
+    solutionCount += result.solutionCount;
+  }
+  return {
+    n: n,
+    solutionCount: solutionCount
+  };
 };
 
-module.exports = NQueensJobQueueHandler;
-},{"./Board":1,"./NQueensJob":2}],4:[function(require,module,exports){
+module.exports = countNQueensSolutions;
+},{"./classes/Board":1,"./classes/nQueensJobProcessor":2,"./classes/nQueensJobQueueHandler":3}],5:[function(require,module,exports){
 // This file is a Backbone Model (don't worry about what that means)
 // It's part of the Board Visualizer
 // The only portions you need to work on are the helper functions (below)
-var NQueensJobQueueHandler = require('./NQueensJobQueueHandler');
-var NQueensJob = require('./NQueensJob');
-var Board = require('./Board');
+var nQueensJobQueueHandler = require('./classes/nQueensJobQueueHandler');
+var countNQueensSolutions = require('./countNQueensDistributed');
+
 try {
     if (self !== undefined) {
+        /**
+         * @param Array[jobObject, ...]
+         * @return <object>
+         *   jobs: Array[jobObject, ...]
+         *   solutionCount: Number
+         */
         self.addEventListener('message', function (e) {
-            var jobCollection = e.data.jobs;
-            var solutionCount = e.data.solutionCount;
-            var queue = new NQueensJobQueueHandler(jobCollection, solutionCount);
-            self.postMessage(queue.execute());
+            // self.postMessage(countNQueensSolutions(e.data.n));
+            var jobCollection = e.data.jobCollection;
+            self.postMessage(nQueensJobQueueHandler(jobCollection));
         }, false);
     }
 } catch (err) {}
-
-try {
-    if (module !== undefined && module.exports !== undefined) {
-        module.exports = __self;
-    }
-} catch (err) {}
-},{"./Board":1,"./NQueensJob":2,"./NQueensJobQueueHandler":3}]},{},[4])
+},{"./classes/nQueensJobQueueHandler":3,"./countNQueensDistributed":4}]},{},[5])
 ;

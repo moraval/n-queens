@@ -1,4 +1,4 @@
-var Board = require('./Board');
+var Board = require('./classes/Board');
 
 $(document).ready(function () {
   var NQueensDistributionHandler = function (n) {
@@ -9,80 +9,120 @@ $(document).ready(function () {
     __self.n = n;
 
     __self.init = function () {
-      __self.worker = new Worker('dist/worker/worker.js');
+      __self.workers = [];
+      __self.numberOfWorkers = 4;
+      for (var i = 0; i < __self.numberOfWorkers; i += 1) {
+        __self.workers.push(new Worker('dist/worker/worker.js'));
+      }
       __self.$messages = $('.messages');
-      __self.startQueue(0, __self.queueCallback);
-      __self.solutions = [];
+      __self.$solutions = $('.solutions');
+      __self.n = 4;
+      __self.nQueueStarted = {};
+      __self.startQueue(__self.n);
+      __self.solutionCount = {};
+      __self.queueTimerInterval = null;
+      for (var ii = 0; ii < 4; ii += 1) {
+        __self.workers[ii].addEventListener('message', __self.messageHandler, false);
+      }
     };
-
-    __self.queueCallback = function (n, solutionCount) {
-      // __self.pushSolutionMessage(n, solutionCount);
-      console.log('* queueCallback');
-      setTimeout(function () {
-        if (n < 6) {
-          console.log('* Starting New Queue: ' + (n + 1));
-          __self.startQueue(n + 1, __self.queueCallback);
-        }
-      }, 2000);
-    };
-
-    __self.worker.addEventListener('message', , false);
 
     __self.messageHandler = function (e) {
-      var newJobs = e.data.jobs;
-      solutionCount += e.data.solutionCount;
-      if (newJobs.length > 0) {
-        // console.log('Enqueueing More Jobs');
-        // setTimeout(function () {
-        //   worker.postMessage(newJobs, 0);
-        // }, 10000);
-      } else {
-        console.log('* Done - New N: ' + n + ' / ' + solutionCount);
-        // if (typeof callback === 'function') {
-        //   callback(n, solutionCount);
-        // }
+      var jobCollection = e.data.jobCollection;
+      var solutionCount = e.data.solutionCount;
+      for (var n in solutionCount) {
+        if (__self.solutionCount[n] === undefined) {
+          __self.solutionCount[n] = 0;
+        }
+        __self.solutionCount[n] += solutionCount[n];
+        __self.pushMessage('Appending ' + solutionCount[n] + ' new solutions for  ' + n);
+        clearTimeout(__self.queueTimerInterval);
+        __self.queueTimerInterval = setTimeout(__self.queueTimer.bind(null, +n + 1), 1000);
+      }
+      if (jobCollection.length > 0) {
+        __self.pushMessage('Enqueueing ' + jobCollection.length + ' new jobs');
+        var splitJobCollection = __self.splitArrayInForWorkers(jobCollection);
+        for (var i = 0; i < __self.numberOfWorkers; i += 1) {
+          if (splitJobCollection[i].length > 0) {
+            __self.workers[i].postMessage({
+              jobCollection: splitJobCollection[i]
+            });
+          }
+        }
       }
     };
 
-    __self.startQueue = function (n, callback) {
-      console.log('* Start Queue: ', n);
-      if (n === 0 || n === 1) {
-        if (typeof callback === 'function') {
-          callback(n, 1);
+    __self.queueTimer = function (n) {
+      if (window.continueQueue !== false) {
+        if (__self.nQueueStarted[n] === undefined) {
+          __self.pushSolutionMessage(n - 1, __self.solutionCount[+n - 1]);
+          __self.pushMessage('Starting new queue: ' + n);
+          console.log('Solution for N (', +n - 1, '): ' + __self.solutionCount[+n - 1]);
+          console.log('Starting new queue: ' + n);
+          __self.nQueueStarted[n] = {
+            'started': true
+          };
+          __self.startQueue(n);
         }
       }
-      if (n === 2 || n === 3) {
-        if (typeof callback === 'function') {
-          callback(n, 0);
-        }
-      }
+    };
+
+    __self.startQueue = function (n) {
+      if (n === 0 || n === 1) return {
+        n: n,
+        solutionCount: 1
+      };
+      if (n === 2 || n === 3) return {
+        n: n,
+        solutionCount: 0
+      };
       var board = new Board({
         n: n
       });
-      __self.solutionCount[n] = 0;
+      var solutionCount = 0;
+      var jobCollection = [{
+        'boardRows': board.rows(),
+        'rowIndex': 0,
+        'n': n,
+        'id': Math.floor(Math.random() * 10000)
+      }];
+      __self.workers[0].postMessage({
+        jobCollection: jobCollection
+      });
+    };
 
-      // Create new NQueensQueueHandler to be executed by the worker
-      __self.worker.postMessage({
-        jobs: [{
-          'rows': board.rows(),
-          'rowIndex': 0,
-          'n': n
-        }],
-        solutionCount: 0
-      }); // Send data to our worker.
+    __self.splitArrayInForWorkers = function (array) {
+      var arrayCopy = array.slice();
+      var oneFourth = Math.max(1, Math.floor(array.length / __self.numberOfWorkers));
+      var splitArray = [];
+      for (var i = 0; i < __self.numberOfWorkers; i += 1) {
+        if (i === __self.numberOfWorkers - 1) {
+          splitArray.push(arrayCopy.splice(0, arrayCopy.length));
+        } else {
+          splitArray.push(arrayCopy.splice(0, oneFourth));
+        }
+      }
+      return splitArray;
     };
 
     __self.pushSolutionMessage = function (n, solution) {
-      var str = '* Solutions for n == ' + n + ': ' + solution;
-      __self.pushMessage(str);
+      var str = 'Solution for n == ' + n + ': ' + solution;
+      __self.pushMessage(str, ['solution'], true);
     };
 
-    __self.pushMessage = function (str) {
-      var _str = '<div class="message">';
+    __self.pushMessage = function (str, classes, isSolution) {
+      classes = classes || [];
+      isSolution = isSolution || false;
+      classes.push('message');
+      var _str = '<div class="' + classes.join(' ') + '">';
       _str += str;
       _str += '</div>';
-      __self.$messages.append(_str);
+      if (isSolution === true) {
+        __self.$messages.html('');
+        __self.$solutions.prepend(_str);
+      }
+      __self.$messages.prepend(_str);
     };
+
     __self.init();
     return self;
   };
