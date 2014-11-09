@@ -13,13 +13,9 @@ try {
          *   solutionCount: Number
          */
         self.addEventListener('message', function (e) {
-<<<<<<< HEAD
-            self.postMessage(__self.countNQueensSolutions(e.data.n));
-=======
             // self.postMessage(countNQueensSolutions(e.data.n));
             var jobCollection = e.data.jobCollection;
             self.postMessage(nQueensJobQueueHandler(jobCollection));
->>>>>>> distributed-2
         }, false);
     }
 } catch (err) {}
