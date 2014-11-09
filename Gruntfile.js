@@ -6,7 +6,7 @@ module.exports = function (grunt) {
         files: ['Gruntfile.js']
       },
       watchify: {
-        files: 'src/worker/*',
+        files: 'src/worker/**/*',
         tasks: ['watchify']
       },
       options: {

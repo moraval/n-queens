@@ -1,4 +1,4 @@
-var Board = require('./Board');
+var Board = require('./classes/Board');
 
 var countNQueensSolutions = function (n) {
     if (n === 0 || n === 1) return {

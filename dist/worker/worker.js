@@ -5,7 +5,6 @@ var range = function (start, stop, step) {
     start = 0;
   }
   step = arguments[2] || 1;
-
   var len = Math.max(Math.ceil((stop - start) / step), 0);
   var idx = 0;
   var range = new Array(len);
@@ -17,7 +16,7 @@ var range = function (start, stop, step) {
   return range;
 };
 
-var Board = function (arraryOrN) {
+var Board = function (params) {
   var obj = {
     attributes: {},
     set: function (key, value) {
@@ -52,7 +51,6 @@ var Board = function (arraryOrN) {
     hasAnyRooksConflicts: function () {
       return obj.hasAnyRowConflicts() || obj.hasAnyColConflicts();
     },
-
     hasAnyQueenConflictsOn: function (rowIndex, colIndex) {
       return (
         obj.hasRowConflictAt(rowIndex) ||
@@ -61,35 +59,15 @@ var Board = function (arraryOrN) {
         obj.hasMinorDiagonalConflictAt(rowIndex, colIndex)
       );
     },
-
     hasAnyQueensConflicts: function () {
       return obj.hasAnyRooksConflicts() || obj.hasAnyMajorDiagonalConflicts() || obj.hasAnyMinorDiagonalConflicts();
     },
-
     _isInBounds: function (rowIndex, colIndex) {
       return (
         0 <= rowIndex && rowIndex < obj.get('n') &&
         0 <= colIndex && colIndex < obj.get('n')
       );
     },
-
-
-    /*
-    _             _     _
-___| |_ __ _ _ __| |_  | |__   ___ _ __ ___ _
-/ __| __/ _` | '__| __| | '_ \ / _ \ '__/ _ (_)
-\__ \ || (_| | |  | |_  | | | |  __/ | |  __/_
-|___/\__\__,_|_|   \__| |_| |_|\___|_|  \___(_)
-
-*/
-    /*=========================================================================
-=                 TODO: fill in these Helper Functions                    =
-=========================================================================*/
-
-    // ROWS - run from left to right
-    // --------------------------------------------------------------
-    //
-    // test if a specific row on obj board contains a conflict
     hasRowConflictAt: function (row) {
       var counter = 0;
 
@@ -100,8 +78,6 @@ ___| |_ __ _ _ __| |_  | |__   ___ _ __ ___ _
 
       return counter > 1;
     },
-
-    // test if any rows on obj board contain conflicts
     hasAnyRowConflicts: function () {
       var rows = obj.rows();
 
@@ -113,13 +89,6 @@ ___| |_ __ _ _ __| |_  | |__   ___ _ __ ___ _
 
       return false;
     },
-
-
-
-    // COLUMNS - run from top to bottom
-    // --------------------------------------------------------------
-    //
-    // test if a specific column on obj board contains a conflict
     hasColConflictAt: function (colIndex, rows) {
       var counter = 0;
 
@@ -130,8 +99,6 @@ ___| |_ __ _ _ __| |_  | |__   ___ _ __ ___ _
 
       return counter > 1;
     },
-
-    // test if any columns on obj board contain conflicts
     hasAnyColConflicts: function () {
       var rows = obj.rows();
 
@@ -143,13 +110,6 @@ ___| |_ __ _ _ __| |_  | |__   ___ _ __ ___ _
 
       return false;
     },
-
-
-
-    // Major Diagonals - go from top-left to bottom-right
-    // --------------------------------------------------------------
-    //
-    // test if a specific major diagonal on obj board contains a conflict
     hasMajorDiagonalConflictAt: function (rowIndex, colIndex) {
       var rows = obj.rows();
       var counter = 0;
@@ -164,9 +124,7 @@ ___| |_ __ _ _ __| |_  | |__   ___ _ __ ___ _
         ++rowIdx;
         ++colIdx;
       }
-
       return counter > 1;
-
       rowIdx = rowIndex;
       colIdx = colIndex;
       counter = 0;
@@ -181,8 +139,6 @@ ___| |_ __ _ _ __| |_  | |__   ___ _ __ ___ _
 
       return counter > 1;
     },
-
-    // test if any major diagonals on obj board contain conflicts
     hasAnyMajorDiagonalConflicts: function () {
       var n = obj.get('n');
 
@@ -192,21 +148,14 @@ ___| |_ __ _ _ __| |_  | |__   ___ _ __ ___ _
         }
       }
 
-      for (var i = 0; i < n; ++i) {
-        if (obj.hasMajorDiagonalConflictAt(0, i)) {
+      for (var ii = 0; ii < n; ++ii) {
+        if (obj.hasMajorDiagonalConflictAt(0, ii)) {
           return true;
         }
       }
 
       return false;
     },
-
-
-
-    // Minor Diagonals - go from top-right to bottom-left
-    // --------------------------------------------------------------
-    //
-    // test if a specific minor diagonal on obj board contains a conflict
     hasMinorDiagonalConflictAt: function (rowIndex, colIndex) {
       var rows = obj.rows();
       var counter = 0;
@@ -220,29 +169,22 @@ ___| |_ __ _ _ __| |_  | |__   ___ _ __ ___ _
         ++rowIdx;
         --colIdx;
       }
-
       if (counter > 1) {
         return true;
       }
-
       rowIdx = rowIndex;
       colIdx = colIndex;
       counter = 0;
-
       while (obj._isInBounds(rowIdx, colIdx)) {
         if (rows[rowIdx][colIdx] === 1)++counter;
         if (counter > 1) break;
-
         --rowIdx;
         ++colIdx;
       }
-
       if (counter > 1) {
         return true;
       }
     },
-
-    // test if any minor diagonals on obj board contain conflicts
     hasAnyMinorDiagonalConflicts: function () {
       var n = obj.get('n');
       for (var i = 0; i < n; ++i) {
@@ -257,11 +199,8 @@ ___| |_ __ _ _ __| |_  | |__   ___ _ __ ___ _
       }
       return false;
     }
-
-    /*--------------------  End of Helper Functions  ---------------------*/
-
   };
-  obj.initialize(arraryOrN);
+  obj.initialize(params);
   return obj;
 };
 var makeEmptyMatrix = function (n) {
@@ -277,133 +216,152 @@ var makeEmptyArray = function (n) {
 module.exports = Board;
 },{}],2:[function(require,module,exports){
 var Board = require('./Board');
-// NQueensJob (Board, N)
-// return solutionCount, jobs
-var NQueensJob = function (board, rowIndex, n) {
-  this.board = board;
-  this.rowIndex = rowIndex;
-  this.jobs = [];
-  this.executed = false;
-  this.n = n;
-  this.solutionCount = 0;
-};
+/**
+ * @param <jobObject>
+ *   board: Matrix
+ *   rowIndex: Number
+ *   n: Number
+ * @return <object>
+ *   foundSolution: Boolean
+ *   rowIndex: Number
+ *   n: Number
+ *   jobs: Array[jobObject]
+ */
+var nQueensJobProcessor = function (jobObject) {
+  var boardRows = jobObject.boardRows;
+  var rowIndex = jobObject.rowIndex;
+  var n = jobObject.n;
 
-NQueensJob.prototype.getID = function () {
-  return this.board.getID();
-};
+  var board = new Board(boardRows);
+  var foundSolution = false;
+  var jobs = [];
 
-NQueensJob.prototype.execute = function () {
-  if (this.rowIndex === this.n) {
-    this.solutionCount += 1;
-    return {
-      solutionCount: this.solutionCount,
-      jobs: []
-    };
-  }
-  for (var i = 0; i < this.n; i += 1) {
-    this.board.togglePiece(this.rowIndex, i);
-    if (!this.board.hasAnyQueensConflicts()) {
-      this.jobs.push(
-        new NQueensJob(
-          new Board(this.board.rows()),
-          this.rowIndex + 1,
-          this.n
-        )
-      );
+  if (rowIndex === n) {
+    foundSolution = true;
+  } else {
+    for (var i = 0; i < n; i += 1) {
+      board.togglePiece(rowIndex, i);
+      if (!board.hasAnyQueensConflicts()) {
+        jobs.push({
+          boardRows: board.rows(),
+          rowIndex: rowIndex + 1,
+          n: n,
+          id: Math.floor(Math.random() * 10000)
+        });
+      }
+      board.togglePiece(rowIndex, i);
     }
-    this.board.togglePiece(this.rowIndex, i);
   }
-  this.exeucted = true;
   return {
-    solutionCount: this.solutionCount,
-    jobs: this.jobs
+    foundSolution: foundSolution,
+    rowIndex: rowIndex,
+    n: n,
+    jobs: jobs
   };
 };
 
-module.exports = NQueensJob;
+module.exports = nQueensJobProcessor;
 },{"./Board":1}],3:[function(require,module,exports){
-var NQueensJobQueueHandler = function (jobs, solutionCount) {
-  this.jobs = jobs;
-  this.solutionCount = solutionCount;
-};
+var Board = require('./Board');
+var nQueensJobProcessor = require('./nQueensJobProcessor');
 
-NQueensJobQueueHandler.prototype.getJobCount = function () {
-  return this.jobs.length;
-};
-
-NQueensJobQueueHandler.prototype.execute = function () {
-  while (this.jobs.length > 0 || this.jobCount < 100) {
+/**
+ * @param Array[jobObject, ...]
+ * @return <object>
+ *   jobs: Array[jobObject, ...]
+ *   solutionCount: Number
+ */
+var nQueensJobQueueHandler = function (enqueuedJobs) {
+  var solutionCount = {};
+  var executedJobCount = 0;
+  // Execute 100 jobs MAX
+  while (enqueuedJobs.length > 0 && executedJobCount < 100) {
+    executedJobCount += 1;
     // Execute the first job in the queue
-    this.executeSingleJob(this.jobs[0]);
-    // Remove this job once it's done
-    this.jobs.splice(0, 1);
+    var result = nQueensJobProcessor(enqueuedJobs.pop());
+    // Concatenate new jobs
+    enqueuedJobs = enqueuedJobs.concat(result.jobs);
+    // Add the solution to our solution
+    if (result.foundSolution === true) {
+      if (solutionCount[result.n] === undefined) {
+        solutionCount[result.n] = 1;
+      } else {
+        solutionCount[result.n] += 1;
+      }
+    }
   }
   return {
-    jobs: this.jobs,
-    solutionCount: this.solutionCount
+    jobCollection: enqueuedJobs,
+    solutionCount: solutionCount
   };
 };
 
-NQueensJobQueueHandler.prototype.executeSingleJob = function (job) {
-  var jobResult = job.execute();
-  this.jobs = this.jobs.concat(jobResult.jobs);
-  this.solutionCount += jobResult.solutionCount;
-};
-
-module.exports = NQueensJobQueueHandler;
-},{}],4:[function(require,module,exports){
-var Board = require('./Board');
-var NQueensJobQueueHandler = require('./NQueensJobQueueHandler');
-var NQueensJob = require('./NQueensJob');
+module.exports = nQueensJobQueueHandler;
+},{"./Board":1,"./nQueensJobProcessor":2}],4:[function(require,module,exports){
+var Board = require('./classes/Board');
+var nQueensJobQueueHandler = require('./classes/nQueensJobQueueHandler');
+var nQueensJobProcessor = require('./classes/nQueensJobProcessor');
 
 var countNQueensSolutions = function (n) {
-    if (n === 0 || n === 1) return {
-        n: n,
-        solution: 1
-    };
-    if (n === 2 || n === 3) return {
-        n: n,
-        solution: 0
-    };
-    var board = new Board({
-        n: n
-    });
-    var solutionCount = 0;
-    var queue = new NQueensJobQueueHandler(
-        [new NQueensJob(new Board(board.rows()), 0, n)],
-        0
-    );
-    while (queue.getJobCount() > 0) {
-        queue.execute();
+  if (n === 0 || n === 1) return {
+    n: n,
+    solutionCount: 1
+  };
+  if (n === 2 || n === 3) return {
+    n: n,
+    solutionCount: 0
+  };
+  var board = new Board({
+    n: n
+  });
+  var solutionCount = 0;
+  var jobs = [{
+    'boardRows': board.rows(),
+    'rowIndex': 0,
+    'n': n
+  }];
+  while (jobs.length > 0) {
+    var result;
+    if (jobs.length > 1) {
+      var randomKey = Math.floor(Math.random() * jobs.length);
+      var randomJob = jobs.splice(randomKey, 1)[0];
+      result = nQueensJobQueueHandler(jobs);
+      jobs = result.jobs;
+      jobs.push(randomJob);
+    } else {
+      result = nQueensJobQueueHandler(jobs);
+      jobs = result.jobs;
     }
-    return {
-        n: n,
-        solution: queue.solutionCount
-    };
+    solutionCount += result.solutionCount;
+  }
+  return {
+    n: n,
+    solutionCount: solutionCount
+  };
 };
 
 module.exports = countNQueensSolutions;
-},{"./Board":1,"./NQueensJob":2,"./NQueensJobQueueHandler":3}],5:[function(require,module,exports){
+},{"./classes/Board":1,"./classes/nQueensJobProcessor":2,"./classes/nQueensJobQueueHandler":3}],5:[function(require,module,exports){
 // This file is a Backbone Model (don't worry about what that means)
 // It's part of the Board Visualizer
 // The only portions you need to work on are the helper functions (below)
-
-var __self = {};
-__self.Board = require('./Board');
-__self.countNQueensSolutions = require('./countNQueensDistributed');
+var nQueensJobQueueHandler = require('./classes/nQueensJobQueueHandler');
+var countNQueensSolutions = require('./countNQueensDistributed');
 
 try {
     if (self !== undefined) {
+        /**
+         * @param Array[jobObject, ...]
+         * @return <object>
+         *   jobs: Array[jobObject, ...]
+         *   solutionCount: Number
+         */
         self.addEventListener('message', function (e) {
-            self.postMessage(__self.countNQueensSolutions(e.data));
+            // self.postMessage(countNQueensSolutions(e.data.n));
+            var jobCollection = e.data.jobCollection;
+            self.postMessage(nQueensJobQueueHandler(jobCollection));
         }, false);
     }
 } catch (err) {}
-
-try {
-    if (module !== undefined && module.exports !== undefined) {
-        module.exports = __self;
-    }
-} catch (err) {}
-},{"./Board":1,"./countNQueensDistributed":4}]},{},[5])
+},{"./classes/nQueensJobQueueHandler":3,"./countNQueensDistributed":4}]},{},[5])
 ;

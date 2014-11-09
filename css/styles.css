@@ -24,8 +24,26 @@ body {
     max-width: 800px;
 }
 
-.message .message {
+.messages {
+  width: 49.99%;
+  float: left;
+}
+
+.solutions {
+  width: 47.99%;
+  float: right;
+}
+
+.message {
     border-radius: 4px;
     padding: 5px;
-    background-color: #ccc;
+    background-color: #f7f7f7;
+    margin-bottom: 5px;
+    font-size: 10px;
+}
+
+.message.solution {
+  font-size: 13px;
+  font-weight: bold;
+  background-color: #f2f2f2;
 }
